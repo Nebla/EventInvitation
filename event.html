@@ -2,66 +2,57 @@
 <html>
   <head>
 	<title>Event Area</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+
+      <script type="text/javascript">
+        function registerUser() {
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/json',
+                data: '{ "userEmail": $(\'#userEmail\').val(), "userName": $(\'#userName\').val(),"userCompany": $(\'#userCompamy\').val()}',
+                success: function(data, textStatus) {
+                    $('#userEmail').innerHTML = data;
+                }
+            });
+        }
+
+        function checkUser() {
+            var url = "/status?eventId="+ "{{event.identify}}" + "&userId=" + $('#userEmail').val();
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: null,
+                dataType: null,
+                success: function(data, textStatus) {
+                    $('#userEmail').innerHTML = data;
+                }
+            });
+        }
+    </script>
+
   </head>
 
   <body>
 
     <h1>Welcome to event {{event.name}}</h1>
 
-    <form action="/create" method="post">
-        Event Id:
-        <input type="text" name="eventId">
+        User Email:
+        <input type="text" id="userEmail">
         <br>
-        Event Name:
-        <input type="text" name="eventName">
+        User Full Name:
+        <input type="text" id="userName">
         <br>
-        Event Availability:
-        <input type="text" name="total">
-        <div><input type="submit" value="Create Event"></div>
-    </form>
+        User Company:
+        <input type="text" id="userCompany">
+        <br>
+        <br>
+        <button onclick="registerUser();">Register</button>
+        <button onclick="checkUser();">Check User Status</button>
 
-    <div id="events" style="display: block;">
-    <h2>Current Events</h2>
-        <div class="datagrid">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Creation Date</th>
-                        <th>Name</th>
-                        <th>Total</th>
-                        <th>Available</th>
-                        <th>Go</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in events %}
-                        {% if loop.index is divisibleby 2 %}
-                            <tr>
-                                <td>{{event.creationDate.strftime('%Y-%m-%d')}}</td>
-                                <td>{{event.name}}</td>
-                                <td>{{event.total}}</td>
-                                <td>{{event.available}}</td>
+        <div id="resultDiv"></div>
 
-                                <td><input type="image" src="resources/Foward.png" onclick="goEvent({{event.identity}});"/></td>
-                                <td><input type="image" src="resources/Delete.png" onclick="deleteEvent({{event.identity}});"/></td>
-                            </tr>
-                        {% else %}
-                            <tr class="alt">
-                                <td>{{event.creationDate.strftime('%Y-%m-%d')}}</td>
-                                <td>{{event.name}}</td>
-                                <td>{{event.total}}</td>
-                                <td>{{event.available}}</td>
-
-                                <td><input type="image" src="resources/Foward.png" onclick="goEvent({{event.identity}});"/></td>
-                                <td><input type="image" src="resources/Delete.png" onclick="deleteEvent({{event.identity}});"/></td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
   </body>
 </html>

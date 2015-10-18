@@ -8,12 +8,12 @@
 
     <script type="text/javascript">
         function goEvent(eventId) {
-            var url = "/?eventId="+eventId;
+            var url = "/event?eventId="+eventId;
             $(location).attr("href", url);
         }
 
         function deleteEvent(eventId) {
-            var url = "/?eventId="+eventId;
+            var url = "/event?eventId="+eventId;
             $.ajax({
                 type: "DELETE",
                 url: url,

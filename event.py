@@ -1,10 +1,11 @@
 import os
-import urllib
 
 from google.appengine.ext import ndb
 
 import jinja2
 import webapp2
+
+import json
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -13,9 +14,11 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 DEFAULT_EVENT_NAME = 'event_group'
 
+
 def event_key(event_name=DEFAULT_EVENT_NAME):
     # Constructs a Datastore key for a Event entity.
     return ndb.Key('Events', event_name)
+
 
 class Event(ndb.Model):
     identity = ndb.StringProperty(indexed=True)
@@ -24,33 +27,88 @@ class Event(ndb.Model):
     total = ndb.IntegerProperty(indexed=False)
     creationDate = ndb.DateTimeProperty(auto_now_add=True)
 
+
 class User(ndb.Model):
-    identity = ndb.StringProperty(indexed=False)
-    event = ndb.StructuredProperty(Event)
+    email = ndb.StringProperty(indexed=True)
+    name = ndb.StringProperty(indexed=False)
+    company = ndb.StringProperty(indexed=False)
 
-class MainPage(webapp2.RequestHandler):
 
+class EventPage(webapp2.RequestHandler):
     def get(self):
-
         event_id = self.request.get('eventId')
-        event_query = Event.query(Event.identity == event_id, ancestor = event_key())
+        event_query = Event.query(Event.identity == event_id, ancestor=event_key())
         event = event_query.get()
 
-        template_values = {
-            'event': event,
-        }
-        template = JINJA_ENVIRONMENT.get_template('event.html')
-        self.response.write(template.render(template_values))
+        if (event):
+            template_values = {
+                'event': event,
+            }
+            template = JINJA_ENVIRONMENT.get_template('event.html')
+            self.response.write(template.render(template_values))
+        else:
+            self.response.status_int = 404
+            self.response.status = "404 - Not found"
+            self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
+
+    def post(self):
+        event_id = self.request.get('eventId')
+        event_query = Event.query(Event.identity == event_id, ancestor=event_key())
+        event = event_query.get()
+
+        if (event):
+            eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
+            user = User(parent=eventKey)
+
+            jsonstring = self.request.body
+            jsonobject = json.loads(jsonstring)
+
+            user.email = jsonobject.get('userEmail')
+            user.name = jsonobject.get('userName')
+            user.company = jsonobject.get('userCompany')
+
+            user.put()
+
+        else:
+            self.response.status_int = 404
+            self.response.status = "404 - Not found"
+            self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
+
 
     def delete(self):
         event_id = self.request.get('eventId')
-        event_query = Event.query(Event.identity == event_id, ancestor = event_key())
+        event_query = Event.query(Event.identity == event_id, ancestor=event_key())
         event = event_query.get()
         eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
         eventKey.delete()
 
-class Admin(webapp2.RequestHandler):
 
+class Status(webapp2.RequestHandler):
+    def get(self):
+
+        event_id = self.request.get('eventId')
+        user_email = self.request.get('userId')
+
+        event_query = Event.query(Event.identity == event_id, ancestor=event_key())
+        event = event_query.get()
+
+        if event:
+            eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
+            user_query = User.query(User.email == user_email, ancestor=eventKey)
+            user = user_query.get()
+            self.response.headers['Content-Type'] = "application/json"
+
+            if user:
+                self.response.out.write(json.dumps({'confirmed': 'true'}))
+            else:
+                self.response.out.write(json.dumps({'confirmed': 'false'}))
+
+        else:
+            self.response.status_int = 404
+            self.response.status = "404 - Not found"
+            self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
+
+class Admin(webapp2.RequestHandler):
     def get(self):
         events_query = Event.query(ancestor=event_key()).order(-Event.creationDate)
         events = events_query.fetch()
@@ -76,6 +134,7 @@ class Admin(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/create', Admin),
-], debug=True)
+                                  ('/event', EventPage),
+                                  ('/status', Status),
+                                  ('/create', Admin),
+                              ], debug=True)
