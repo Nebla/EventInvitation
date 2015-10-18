@@ -7,22 +7,28 @@
 	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
 
     <script type="text/javascript">
+
         function goEvent(eventId) {
             var url = "/event?eventId="+eventId;
             $(location).attr("href", url);
         }
 
         function deleteEvent(eventId) {
-            var url = "/event?eventId="+eventId;
+            var url = "/event?eventId=" + eventId;
             $.ajax({
                 type: "DELETE",
                 url: url,
                 data: null,
                 dataType: null,
-                success: function(data, textStatus) {
+                success: function (data, textStatus) {
                     location.reload();
                 }
             });
+        }
+
+        function statusEvent(eventId) {
+            var url = "/eventStatus?eventId="+eventId;
+            $(location).attr("href", url);
         }
     </script>
 

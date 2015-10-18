@@ -91,8 +91,31 @@ class EventPage(webapp2.RequestHandler):
         eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
         eventKey.delete()
 
+class EventStatus(webapp2.RequestHandler):
+    def get(self):
+        event_id = self.request.get('eventId')
+        event_query = Event.query(Event.identity == event_id, ancestor=event_key())
+        event = event_query.get()
 
-class Status(webapp2.RequestHandler):
+        eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
+
+        user_query = User.query(ancestor=eventKey)
+        users = user_query.fetch()
+
+        if (event):
+            template_values = {
+                'event': event,
+                'users': users
+            }
+            template = JINJA_ENVIRONMENT.get_template('status.html')
+            self.response.write(template.render(template_values))
+        else:
+            self.response.status_int = 404
+            self.response.status = "404 - Not found"
+            self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
+
+
+class UserStatus(webapp2.RequestHandler):
     def get(self):
 
         event_id = self.request.get('eventId')
@@ -144,6 +167,7 @@ class Admin(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
                                   ('/event', EventPage),
-                                  ('/status', Status),
+                                  ('/userStatus', UserStatus),
+                                  ('/eventStatus', EventStatus),
                                   ('/create', Admin),
                               ], debug=True)

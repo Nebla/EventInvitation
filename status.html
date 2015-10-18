@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>Event Status Area</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+
+    <script type="text/javascript">
+        function goBack() {
+            var url = "/create";
+            $(location).attr("href", url);
+        }
+    </script>
+
+  </head>
+
+  <body>
+
+    <h1>Event Status: {{event.name}}</h1>
+
+    <div class="datagrid">
+        <table>
+            <thead>
+                <tr>
+                    <th>User Name</th>
+                    <th>User Email</th>
+                    <th>User Company</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    {% if loop.index is divisibleby 2 %}
+                        <tr>
+                            <td>{{user.name}}</td>
+                            <td>{{user.email}}</td>
+                            <td>{{user.company}}</td>
+                        </tr>
+                    {% else %}
+                        <tr class="alt">
+                            <td>{{user.name}}</td>
+                            <td>{{user.email}}</td>
+                            <td>{{user.company}}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <br><br>
+    <button onclick="goBack();">Go Back</button>
+
+
+  </body>
+</html>
