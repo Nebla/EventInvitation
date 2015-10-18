@@ -57,17 +57,26 @@ class EventPage(webapp2.RequestHandler):
         event = event_query.get()
 
         if (event):
-            eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
-            user = User(parent=eventKey)
+            if event.available > 0:
+                eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
+                user = User(parent=eventKey)
 
-            jsonstring = self.request.body
-            jsonobject = json.loads(jsonstring)
+                jsonstring = self.request.body
+                jsonobject = json.loads(jsonstring)
 
-            user.email = jsonobject.get('userEmail')
-            user.name = jsonobject.get('userName')
-            user.company = jsonobject.get('userCompany')
+                user.email = jsonobject.get('userEmail')
+                user.name = jsonobject.get('userName')
+                user.company = jsonobject.get('userCompany')
 
-            user.put()
+                user.put()
+
+                event.available -= 1
+                event.put()
+
+                self.response.out.write(json.dumps({'status': 'success'}))
+            else:
+                self.response.out.write(json.dumps({'status': 'full event'}))
+
 
         else:
             self.response.status_int = 404

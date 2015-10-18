@@ -54,6 +54,7 @@
                         <th>Name</th>
                         <th>Total</th>
                         <th>Available</th>
+                        <th>Status</th>
                         <th>Go</th>
                         <th>Delete</th>
                     </tr>
@@ -66,7 +67,7 @@
                                 <td>{{event.name}}</td>
                                 <td>{{event.total}}</td>
                                 <td>{{event.available}}</td>
-
+                                <td><input type="image" src="resources/Info.png" onclick="statusEvent({{event.identity}});"/></td>
                                 <td><input type="image" src="resources/Foward.png" onclick="goEvent({{event.identity}});"/></td>
                                 <td><input type="image" src="resources/Delete.png" onclick="deleteEvent({{event.identity}});"/></td>
                             </tr>
@@ -76,7 +77,7 @@
                                 <td>{{event.name}}</td>
                                 <td>{{event.total}}</td>
                                 <td>{{event.available}}</td>
-
+                                <td><input type="image" src="resources/Info.png" onclick="statusEvent({{event.identity}});"/></td>
                                 <td><input type="image" src="resources/Foward.png" onclick="goEvent({{event.identity}});"/></td>
                                 <td><input type="image" src="resources/Delete.png" onclick="deleteEvent({{event.identity}});"/></td>
                             </tr>

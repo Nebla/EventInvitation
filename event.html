@@ -1,58 +1,62 @@
-<!DOCTYPE html>
 <html>
   <head>
-	<title>Event Area</title>
-
+    <title>Event Area</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
 
-      <script type="text/javascript">
+    <script type="text/javascript">
         function registerUser() {
+            document.getElementById("resultText").innerHTML = "";
+            var data = { "userEmail" : $('#userEmail').val(),"userName":$('#userName').val(), "userCompany": $('#userCompany').val()};
+
             $.ajax({
                 type: "POST",
                 dataType: 'json',
                 contentType: 'application/json',
-                data: '{ "userEmail": $(\'#userEmail\').val(), "userName": $(\'#userName\').val(),"userCompany": $(\'#userCompamy\').val()}',
-                success: function(data, textStatus) {
-                    $('#userEmail').innerHTML = data;
+                data: JSON.stringify(data),
+                success: function(result,status,xhr) {
+                    var jsonPretty = JSON.stringify(result, null, '\t');
+                    document.getElementById("resultText").innerHTML = jsonPretty;
+                },
+                error:function(xhr,status,error) {
+                    document.getElementById("resultText").innerHTML = "Status: " + status + "<br> Error: " + error + "<br>Try again.";
                 }
             });
         }
 
-        function checkUser() {
-            var url = "/status?eventId="+ "{{event.identify}}" + "&userId=" + $('#userEmail').val();
+        function checkUser(eventId) {
+            var url = "/status?eventId="+eventId+"&userId=" + $('#userEmail').val();
             $.ajax({
                 type: "GET",
                 url: url,
                 data: null,
                 dataType: null,
-                success: function(data, textStatus) {
-                    $('#userEmail').innerHTML = data;
+                success: function(result,status,xhr) {
+                    var jsonPretty = JSON.stringify(result, null, '\t');
+                    document.getElementById("resultText").innerHTML = jsonPretty;
+                },
+                error:function(xhr,status,error) {
+                    document.getElementById("resultText").innerHTML = "Status: " + status + "<br> Error: " + error + "<br>Try again.";
                 }
             });
         }
     </script>
-
   </head>
 
   <body>
-
     <h1>Welcome to event {{event.name}}</h1>
-
-        User Email:
-        <input type="text" id="userEmail">
-        <br>
-        User Full Name:
-        <input type="text" id="userName">
-        <br>
-        User Company:
-        <input type="text" id="userCompany">
-        <br>
-        <br>
-        <button onclick="registerUser();">Register</button>
-        <button onclick="checkUser();">Check User Status</button>
-
-        <div id="resultDiv"></div>
+    User Email:
+    <input type="text" id="userEmail">
+    <br>
+    User Full Name:
+    <input type="text" id="userName">
+    <br>
+    User Company:
+    <input type="text" id="userCompany">
+    <br><br>
+    <button onclick="registerUser();">Register</button>
+    <button onclick="checkUser({{event.identity}});">Check User Status</button>
+    <h2 id="resultText"></h2>
 
   </body>
 </html>
