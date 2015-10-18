@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>Event Area</title>
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+
+  <body>
+
+    <h1>Welcome to event {{event.name}}</h1>
+
+    <form action="/create" method="post">
+        Event Id:
+        <input type="text" name="eventId">
+        <br>
+        Event Name:
+        <input type="text" name="eventName">
+        <br>
+        Event Availability:
+        <input type="text" name="total">
+        <div><input type="submit" value="Create Event"></div>
+    </form>
+
+    <div id="events" style="display: block;">
+    <h2>Current Events</h2>
+        <div class="datagrid">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Creation Date</th>
+                        <th>Name</th>
+                        <th>Total</th>
+                        <th>Available</th>
+                        <th>Go</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        {% if loop.index is divisibleby 2 %}
+                            <tr>
+                                <td>{{event.creationDate.strftime('%Y-%m-%d')}}</td>
+                                <td>{{event.name}}</td>
+                                <td>{{event.total}}</td>
+                                <td>{{event.available}}</td>
+
+                                <td><input type="image" src="resources/Foward.png" onclick="goEvent({{event.identity}});"/></td>
+                                <td><input type="image" src="resources/Delete.png" onclick="deleteEvent({{event.identity}});"/></td>
+                            </tr>
+                        {% else %}
+                            <tr class="alt">
+                                <td>{{event.creationDate.strftime('%Y-%m-%d')}}</td>
+                                <td>{{event.name}}</td>
+                                <td>{{event.total}}</td>
+                                <td>{{event.available}}</td>
+
+                                <td><input type="image" src="resources/Foward.png" onclick="goEvent({{event.identity}});"/></td>
+                                <td><input type="image" src="resources/Delete.png" onclick="deleteEvent({{event.identity}});"/></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </body>
+</html>

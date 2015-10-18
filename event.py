@@ -18,7 +18,7 @@ def event_key(event_name=DEFAULT_EVENT_NAME):
     return ndb.Key('Events', event_name)
 
 class Event(ndb.Model):
-    identity = ndb.StringProperty(indexed=False)
+    identity = ndb.StringProperty(indexed=True)
     name = ndb.StringProperty(indexed=False)
     available = ndb.IntegerProperty(indexed=False)
     total = ndb.IntegerProperty(indexed=False)
@@ -26,8 +26,28 @@ class Event(ndb.Model):
 
 class User(ndb.Model):
     identity = ndb.StringProperty(indexed=False)
-    admin = ndb.BooleanProperty(indexed=False)
     event = ndb.StructuredProperty(Event)
+
+class MainPage(webapp2.RequestHandler):
+
+    def get(self):
+
+        event_id = self.request.get('eventId')
+        event_query = Event.query(Event.identity == event_id, ancestor = event_key())
+        event = event_query.get()
+
+        template_values = {
+            'event': event,
+        }
+        template = JINJA_ENVIRONMENT.get_template('event.html')
+        self.response.write(template.render(template_values))
+
+    def delete(self):
+        event_id = self.request.get('eventId')
+        event_query = Event.query(Event.identity == event_id, ancestor = event_key())
+        event = event_query.get()
+        eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
+        eventKey.delete()
 
 class Admin(webapp2.RequestHandler):
 
@@ -37,7 +57,7 @@ class Admin(webapp2.RequestHandler):
         template_values = {
             'events': events,
         }
-        template = JINJA_ENVIRONMENT.get_template('admin.html')
+        template = JINJA_ENVIRONMENT.get_template('create.html')
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -52,12 +72,10 @@ class Admin(webapp2.RequestHandler):
         event.total = int(total)
         event.put()
 
-        query_params = {'event_id': eventId}
-        self.redirect('/?' + urllib.urlencode(query_params))
+        self.redirect('/create')
 
 
 app = webapp2.WSGIApplication([
-    #('/', MainPage),
-    ('/admin', Admin),
+    ('/', MainPage),
     ('/create', Admin),
 ], debug=True)
