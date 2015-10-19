@@ -32,7 +32,6 @@ class User(ndb.Model):
     company = ndb.StringProperty(indexed=False)
 
 class EventPage(webapp2.RequestHandler):
-    @ndb.transactional(xg=True)
     def get(self):
         event_id = self.request.get('eventId')
         event_query = Event.query(Event.identity == event_id, ancestor=event_key())
@@ -82,7 +81,6 @@ class EventPage(webapp2.RequestHandler):
         eventKey.delete()
 
 class EventStatus(webapp2.RequestHandler):
-    @ndb.transactional(xg=True)
     def get(self):
         event_id = self.request.get('eventId')
         event_query = Event.query(Event.identity == event_id, ancestor=event_key())
@@ -104,7 +102,6 @@ class EventStatus(webapp2.RequestHandler):
             self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
 
 class UserStatus(webapp2.RequestHandler):
-    @ndb.transactional(xg=True)
     def get(self):
         event_id = self.request.get('eventId')
         user_email = self.request.get('userId')
@@ -149,7 +146,6 @@ class UserStatusWorker(webapp2.RequestHandler):
 """
 
 class Admin(webapp2.RequestHandler):
-    @ndb.transactional(xg=True)
     def get(self):
         events_query = Event.query(ancestor=event_key()).order(-Event.creationDate)
         events = events_query.fetch()
