@@ -1,0 +1,1 @@
+find -regextype posix-egrep -type f -regex '.*\.(py|yaml)' | sort -r |  xargs -- a2ps -q -2 -Av --toc --line-numbers=1 --tabsize=2 --header='[75.61] Taller de Programacion III' --left-footer='%D{%c}' --footer='Padron 89575 (curso 2.2015)  Ejercicio de Cloud App - GoogleAppEngine (entrega 19/10/2015)' -g -o - | ps2pdf - codigo.pdf
