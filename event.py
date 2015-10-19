@@ -169,5 +169,6 @@ app = webapp2.WSGIApplication([
                                   ('/event', EventPage),
                                   ('/userStatus', UserStatus),
                                   ('/eventStatus', EventStatus),
+                                  ('/', Admin),
                                   ('/create', Admin),
                               ], debug=True)
