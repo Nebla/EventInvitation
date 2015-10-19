@@ -9,7 +9,7 @@ handlers:
 - url: /stylesheets
   static_dir: stylesheets
 - url: /.*
-  script: event.app
+  script: app.app
 
 libraries:
 - name: webapp2

@@ -1,5 +1,6 @@
 import os
 
+from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
 
 import jinja2
@@ -31,6 +32,7 @@ class User(ndb.Model):
     company = ndb.StringProperty(indexed=False)
 
 class EventPage(webapp2.RequestHandler):
+    @ndb.transactional(xg=True)
     def get(self):
         event_id = self.request.get('eventId')
         event_query = Event.query(Event.identity == event_id, ancestor=event_key())
@@ -46,6 +48,7 @@ class EventPage(webapp2.RequestHandler):
             self.response.status = "404 - Not found"
             self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
 
+    @ndb.transactional(xg=True)
     def post(self):
         event_id = self.request.get('eventId')
         event_query = Event.query(Event.identity == event_id, ancestor=event_key())
@@ -70,6 +73,7 @@ class EventPage(webapp2.RequestHandler):
             self.response.status = "404 - Not found"
             self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
 
+    @ndb.transactional(xg=True)
     def delete(self):
         event_id = self.request.get('eventId')
         event_query = Event.query(Event.identity == event_id, ancestor=event_key())
@@ -78,6 +82,7 @@ class EventPage(webapp2.RequestHandler):
         eventKey.delete()
 
 class EventStatus(webapp2.RequestHandler):
+    @ndb.transactional(xg=True)
     def get(self):
         event_id = self.request.get('eventId')
         event_query = Event.query(Event.identity == event_id, ancestor=event_key())
@@ -99,6 +104,7 @@ class EventStatus(webapp2.RequestHandler):
             self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
 
 class UserStatus(webapp2.RequestHandler):
+    @ndb.transactional(xg=True)
     def get(self):
         event_id = self.request.get('eventId')
         user_email = self.request.get('userId')
@@ -118,8 +124,32 @@ class UserStatus(webapp2.RequestHandler):
             self.response.status_int = 404
             self.response.status = "404 - Not found"
             self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
+"""
+
+class UserStatusWorker(webapp2.RequestHandler):
+    def get(self):
+        event_id = self.request.get('eventId')
+        user_email = self.request.get('userId')
+        event_query = Event.query(Event.identity == event_id, ancestor=event_key())
+        event = event_query.get()
+
+        if event:
+            eventKey = ndb.Key("Events", event_key().id(), "Event", event.key.id())
+            user_query = User.query(User.email == user_email, ancestor=eventKey)
+            user = user_query.get()
+            self.response.headers['Content-Type'] = "application/json"
+            if user:
+                self.response.out.write(json.dumps({'confirmed': 'true'}))
+            else:
+                self.response.out.write(json.dumps({'confirmed': 'false'}))
+        else:
+            self.response.status_int = 404
+            self.response.status = "404 - Not found"
+            self.response.body = "The event can not be found. Check your url (eventId) or contact your system administrator."
+"""
 
 class Admin(webapp2.RequestHandler):
+    @ndb.transactional(xg=True)
     def get(self):
         events_query = Event.query(ancestor=event_key()).order(-Event.creationDate)
         events = events_query.fetch()
@@ -129,6 +159,7 @@ class Admin(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('create.html')
         self.response.write(template.render(template_values))
 
+    @ndb.transactional(xg=True)
     def post(self):
         eventId = self.request.get('eventId')
         eventName = self.request.get('eventName')
@@ -146,6 +177,7 @@ class Admin(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
                                   ('/event', EventPage),
                                   ('/userStatus', UserStatus),
+                                  #('/userWorker', UserStatusWorker),
                                   ('/eventStatus', EventStatus),
                                   ('/create', Admin),
                                   ('/', Admin),
